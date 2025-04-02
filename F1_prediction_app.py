@@ -254,86 +254,86 @@ def main():
     
 
     current_year = st.selectbox("Select the year you are predicting for:", options=[2023, 2024, 2025], index=2)
-schedule = fastf1.get_event_schedule(current_year)
-race_mapping = dict(zip(schedule['EventName'], schedule['RoundNumber'])) # Map race name to round number
+    schedule = fastf1.get_event_schedule(current_year)
+    race_mapping = dict(zip(schedule['EventName'], schedule['RoundNumber'])) # Map race name to round number
 
-# Select race based on fetched schedule
-race_name = st.selectbox("Select the race track:", options=list(race_mapping.keys()))
-# Get the round number based on the selected race
-race_num = race_mapping[race_name]
-
-# Fetch previous two years' schedules
-previous_years = [current_year - 1, current_year - 2]
-previous_race_nums = {}
-
-for year in previous_years:
-    try:
-        schedule_prev = fastf1.get_event_schedule(year)
-        race_mapping_prev = dict(zip(schedule_prev['EventName'], schedule_prev['RoundNumber']))
-        previous_race_nums[year] = race_mapping_prev.get(race_name, None)  # Handle missing race mappings
-    except:
-        previous_race_nums[year] = None  # In case of error fetching schedule
-
-if st.button("Predict Q3 Times"):
-    all_data = []
-
-    # Fetch past race data for training
-    for round_num in range(1, race_num):
-        st.write(f"Fetching data for {current_year} round {round_num}...")
-        df = fetch_f1_data(current_year, round_num)
-        if df is not None:
-            df['Year'] = current_year
-            df['Round'] = round_num
-            all_data.append(df)
-
-    # Fetch data from the previous two years
-    for year, round_num in previous_race_nums.items():
-        if round_num is not None:
-            st.write(f"Fetching data for {year} round {round_num}...")
-            prev_year_data = fetch_f1_data(year, round_num)
-            if prev_year_data is not None:
-                prev_year_data['Year'] = year
-                prev_year_data['Round'] = round_num
-                all_data.append(prev_year_data)
-
-    # Train the model only if there is valid data
-    if all_data:
-        combined_df = pd.concat(all_data, ignore_index=True)
-        valid_data = combined_df.dropna(subset=['Q1_sec', 'Q2_sec', 'Q3_sec'], how='all')
-
-        if not valid_data.empty:
-            # Data preprocessing
-            imputer = SimpleImputer(strategy='median')
-            X = valid_data[['Q1_sec', 'Q2_sec']]
-            y = valid_data['Q3_sec']
-            X_clean = pd.DataFrame(imputer.fit_transform(X), columns=X.columns)
-            y_clean = pd.Series(imputer.fit_transform(y.values.reshape(-1, 1)).ravel())
-
-            # Train model
-            model = LinearRegression()
-            model.fit(X_clean, y_clean)
-
-            # Fetch latest race data for prediction
-            latest_data = fetch_f1_data(current_year, race_num)
-
-            if latest_data is not None:
-                st.write("Predicting Q3 times for the upcoming race...")
-                predict_gp(model, latest_data)
-
-                # Evaluate Model Performance
-                y_pred = model.predict(X_clean)
-                mae = mean_absolute_error(y_clean, y_pred)
-                r2 = r2_score(y_clean, y_pred)
-                st.markdown("### Model Performance Metrics:")
-                st.write(f"✅ **Mean Absolute Error:** `{mae:.2f}` seconds")
-                st.write(f"✅ **R² Score:** `{r2:.2f}`")
+    # Select race based on fetched schedule
+    race_name = st.selectbox("Select the race track:", options=list(race_mapping.keys()))
+    # Get the round number based on the selected race
+    race_num = race_mapping[race_name]
+    
+    # Fetch previous two years' schedules
+    previous_years = [current_year - 1, current_year - 2]
+    previous_race_nums = {}
+    
+    for year in previous_years:
+        try:
+            schedule_prev = fastf1.get_event_schedule(year)
+            race_mapping_prev = dict(zip(schedule_prev['EventName'], schedule_prev['RoundNumber']))
+            previous_race_nums[year] = race_mapping_prev.get(race_name, None)  # Handle missing race mappings
+        except:
+            previous_race_nums[year] = None  # In case of error fetching schedule
+    
+    if st.button("Predict Q3 Times"):
+        all_data = []
+    
+        # Fetch past race data for training
+        for round_num in range(1, race_num):
+            st.write(f"Fetching data for {current_year} round {round_num}...")
+            df = fetch_f1_data(current_year, round_num)
+            if df is not None:
+                df['Year'] = current_year
+                df['Round'] = round_num
+                all_data.append(df)
+    
+        # Fetch data from the previous two years
+        for year, round_num in previous_race_nums.items():
+            if round_num is not None:
+                st.write(f"Fetching data for {year} round {round_num}...")
+                prev_year_data = fetch_f1_data(year, round_num)
+                if prev_year_data is not None:
+                    prev_year_data['Year'] = year
+                    prev_year_data['Round'] = round_num
+                    all_data.append(prev_year_data)
+    
+        # Train the model only if there is valid data
+        if all_data:
+            combined_df = pd.concat(all_data, ignore_index=True)
+            valid_data = combined_df.dropna(subset=['Q1_sec', 'Q2_sec', 'Q3_sec'], how='all')
+    
+            if not valid_data.empty:
+                # Data preprocessing
+                imputer = SimpleImputer(strategy='median')
+                X = valid_data[['Q1_sec', 'Q2_sec']]
+                y = valid_data['Q3_sec']
+                X_clean = pd.DataFrame(imputer.fit_transform(X), columns=X.columns)
+                y_clean = pd.Series(imputer.fit_transform(y.values.reshape(-1, 1)).ravel())
+    
+                # Train model
+                model = LinearRegression()
+                model.fit(X_clean, y_clean)
+    
+                # Fetch latest race data for prediction
+                latest_data = fetch_f1_data(current_year, race_num)
+    
+                if latest_data is not None:
+                    st.write("Predicting Q3 times for the upcoming race...")
+                    predict_gp(model, latest_data)
+    
+                    # Evaluate Model Performance
+                    y_pred = model.predict(X_clean)
+                    mae = mean_absolute_error(y_clean, y_pred)
+                    r2 = r2_score(y_clean, y_pred)
+                    st.markdown("### Model Performance Metrics:")
+                    st.write(f"✅ **Mean Absolute Error:** `{mae:.2f}` seconds")
+                    st.write(f"✅ **R² Score:** `{r2:.2f}`")
+                else:
+                    st.error("Failed to fetch latest F1 data for prediction.")
             else:
-                st.error("Failed to fetch latest F1 data for prediction.")
+                st.error("No valid training data available.")
         else:
-            st.error("No valid training data available.")
-    else:
-        st.error("Failed to fetch historical F1 data.")
-
+            st.error("Failed to fetch historical F1 data.")
+    
 if __name__ == "__main__":
     main()
 
