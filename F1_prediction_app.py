@@ -312,54 +312,40 @@ def main():
     
         # Train the model only if there is valid data
         if all_data:
-            combined_df = pd.concat(all_data, ignore_index=True)
+            combined_df = pd.concat(all_data, ignore_index=True)  # Use all historical data
             valid_data = combined_df.dropna(subset=['Q1_sec', 'Q2_sec', 'Q3_sec'], how='all')
-    
+        
             if not valid_data.empty:
                 # Data preprocessing
                 imputer = SimpleImputer(strategy='median')
-            
-                # Select input features and target variable (only from past races)
+        
                 X = valid_data[['Q1_sec', 'Q2_sec']]
-                y = valid_data['Q3_sec'].values.reshape(-1, 1)  # Reshape for imputer
-            
+                y = valid_data['Q3_sec'].values.reshape(-1, 1)  # Ensure correct shape for imputation
+        
                 # Impute missing values
                 X_clean = pd.DataFrame(imputer.fit_transform(X), columns=X.columns)
                 y_clean = pd.Series(imputer.fit_transform(y).ravel(), name='Q3_sec')
-            
-                # Train model **only on past data**
+        
+                # Train model on all available historical data
                 model = LinearRegression()
                 model.fit(X_clean, y_clean)
-            
-                # Now fetch the latest race data for **prediction only**
-                latest_data = fetch_f1_data(current_year, race_num)
-            
-                if latest_data is not None:
-                    st.write("🚀 Predicting Q3 times for the upcoming race...")
-                    
-                    # Ensure latest_data is formatted correctly before prediction
-                    latest_X = latest_data[['Q1_sec', 'Q2_sec']]
-                    latest_X_clean = pd.DataFrame(imputer.transform(latest_X), columns=latest_X.columns)
-            
-                    # Make predictions
-                    latest_data['Predicted_Q3'] = model.predict(latest_X_clean)
-            
-                    # Display results
-                    display_predictions_table(latest_data)
-            
-                    # Evaluate Model Performance
-                    y_pred = model.predict(X_clean)
-                    mae = mean_absolute_error(y_clean, y_pred)
-                    r2 = r2_score(y_clean, y_pred)
-            
-                    # Display performance metrics
-                    st.markdown("## 📊 Model Performance Metrics")
-                    st.success(f"✅ **Mean Absolute Error:** `{mae:.2f}` seconds")
-                    st.success(f"✅ **R² Score:** `{r2:.2f}`")
-                else:
-                    st.error("❌ Failed to fetch latest F1 data for prediction.")
+        
+                # Use **historical data** for prediction, not `latest_data`
+                st.write("🚀 Predicting Q3 times for the upcoming race using historical data...")
+                predict_gp(model, X_clean)  # Predict using all historical data
+        
+                # Evaluate Model Performance
+                y_pred = model.predict(X_clean)
+                mae = mean_absolute_error(y_clean, y_pred)
+                r2 = r2_score(y_clean, y_pred)
+        
+                # Display metrics in a well-formatted way
+                st.markdown("## 📊 Model Performance Metrics")
+                st.success(f"✅ **Mean Absolute Error:** `{mae:.2f}` seconds")
+                st.success(f"✅ **R² Score:** `{r2:.2f}`")
             else:
                 st.error("❌ No valid training data available.")
+        
 
 if __name__ == "__main__":
     main()
