@@ -316,11 +316,6 @@ def main():
         valid_data = combined_df.dropna(subset=['Q1_sec', 'Q2_sec', 'Q3_sec'], how='all')
 
         if not valid_data.empty:
-            # Ensure 'Driver' column is available
-            if "Driver" not in valid_data.columns:
-                st.error("❌ 'Driver' column missing in historical data.")
-                return
-            
             # Data preprocessing
             imputer = SimpleImputer(strategy='median')
             
@@ -335,26 +330,24 @@ def main():
             model = LinearRegression()
             model.fit(X_clean, y_clean)
         
-            # Fetch latest race data for prediction (if available)
-            latest_data = fetch_f1_data(current_year, race_num)
-
-            # Ensure 'valid_data' is passed correctly
-            predict_gp(model, valid_data.copy(), latest_data)
+            # Fetch latest race data for prediction
+            latest_data = fetch_f1_data(current_year, race_num-1)
         
-            # Evaluate Model Performance
-            y_pred = model.predict(X_clean)
-            mae = mean_absolute_error(y_clean, y_pred)
-            r2 = r2_score(y_clean, y_pred)
+            if latest_data is not None:
+                st.write("🚀 Predicting Q3 times for the upcoming race...")
+                predict_gp(model, latest_data)
         
-            # Display metrics in a well-formatted way
-            st.markdown("## 📊 Model Performance Metrics")
-            st.success(f"✅ **Mean Absolute Error:** `{mae:.2f}` seconds")
-            st.success(f"✅ **R² Score:** `{r2:.2f}`")
+                # Evaluate Model Performance
+                y_pred = model.predict(X_clean)
+                mae = mean_absolute_error(y_clean, y_pred)
+                r2 = r2_score(y_clean, y_pred)
+        
+                # Display metrics in a well-formatted way
+                st.markdown("## 📊 Model Performance Metrics")
+                st.success(f"✅ **Mean Absolute Error:** {mae:.2f} seconds")
+                st.success(f"✅ **R² Score:** {r2:.2f}")
+            else:
+                st.error("❌ Failed to fetch latest F1 data for prediction.")
         else:
             st.error("❌ No valid training data available.")
-    else:
-        st.error("❌ No stored historical F1 data found.")
-
-
-if __name__ == "__main__":
-    main()
+Shouldn't we use all data to predict?
