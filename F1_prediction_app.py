@@ -202,11 +202,15 @@ def predict_gp(model, latest_data):
 
     # Display Top Driver Image
     # Get the top 3 drivers and their images
+    # Get the top 3 drivers and their images
     top_drivers = results_df.iloc[:3]['Driver']
     image_urls = [get_wikipedia_driver_image(driver) for driver in top_drivers]
     
     # Create three columns for the images
     col1, col2, col3 = st.columns(3)
+    
+    # Define a fixed height for uniformity
+    fixed_height = 300  # Adjust as needed
     
     # Display images in each column
     for col, image_url, driver in zip([col1, col2, col3], image_urls, top_drivers):
@@ -214,10 +218,10 @@ def predict_gp(model, latest_data):
             if image_url:
                 st.markdown(
                     f"""
-                    <div style="text-align: center;">
+                    <div style="text-align: center; height: {fixed_height}px; display: flex; flex-direction: column; justify-content: center; align-items: center;">
                         <img src="{image_url}" width="200" 
-                             style="border-radius: 15px; border: 3px solid white; box-shadow: 0px 4px 6px rgba(0,0,0,0.1);">
-                        <p style="font-weight: bold;">{driver}</p>
+                             style="border-radius: 15px; border: 3px solid white; box-shadow: 0px 4px 6px rgba(0,0,0,0.1); max-height: 200px; object-fit: cover;">
+                        <p style="font-weight: bold; margin-top: 10px;">{driver}</p>
                     </div>
                     """,
                     unsafe_allow_html=True,
@@ -225,6 +229,7 @@ def predict_gp(model, latest_data):
     
     # Display the prediction table below the images
     display_predictions_table(results_df)
+
 
 
 
