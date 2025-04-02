@@ -11,6 +11,17 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.impute import SimpleImputer
 import streamlit as st # type: ignore
 
+import os
+import fastf1
+
+# Ensure the cache directory exists
+cache_dir = "cache"
+if not os.path.exists(cache_dir):
+    os.makedirs(cache_dir)
+
+# Enable FastF1 cache
+fastf1.Cache.enable_cache(cache_dir)
+
 
 fastf1.Cache.enable_cache('cache')
 
