@@ -209,15 +209,15 @@ def predict_gp(model, latest_data):
 
 
     if image_url:
-    st.markdown(
-        f"""
-        <div style="text-align: center;">
-            <img src="{image_url}" width="300" 
-                 style="border-radius: 15px; border: 5px solid white; box-shadow: 0px 4px 6px rgba(0,0,0,0.1);">
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
+        st.markdown(
+            f"""
+            <div style="text-align: center;">
+                <img src="{image_url}" width="300" 
+                     style="border-radius: 15px; border: 5px solid white; box-shadow: 0px 4px 6px rgba(0,0,0,0.1);">
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
 
 def main():
     st.title("Formula 1 Predictor")
