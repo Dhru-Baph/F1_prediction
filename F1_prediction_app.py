@@ -263,7 +263,7 @@ def main():
     
     previous_year = int(current_year) - 1
     schedule_prev = fastf1.get_event_schedule(previous_year)
-    race_mapping_prev = dict(zip(schedule['EventName'], schedule['RoundNumber']) # Map race name to round number
+    race_mapping_prev = dict(zip(schedule['EventName'], schedule['RoundNumber'])) # Map race name to round number
     # Get the round number based on the selected race
     race_num_prev = race_mapping_prev[race_name]
         
