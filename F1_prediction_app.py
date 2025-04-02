@@ -350,4 +350,6 @@ def main():
                 st.error("❌ Failed to fetch latest F1 data for prediction.")
         else:
             st.error("❌ No valid training data available.")
-Shouldn't we use all data to predict?
+
+if __name__ == "__main__":
+    main()
