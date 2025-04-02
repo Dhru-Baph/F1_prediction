@@ -312,41 +312,44 @@ def main():
     
         # Train the model only if there is valid data
         if all_data:
-            combined_df = pd.concat(all_data, ignore_index=True)  # Use all historical data
+            combined_df = pd.concat(all_data, ignore_index=True)
             valid_data = combined_df.dropna(subset=['Q1_sec', 'Q2_sec', 'Q3_sec'], how='all')
-        
+    
             if not valid_data.empty:
                 # Data preprocessing
                 imputer = SimpleImputer(strategy='median')
-        
+                
                 X = valid_data[['Q1_sec', 'Q2_sec']]
                 y = valid_data['Q3_sec'].values.reshape(-1, 1)  # Ensure correct shape for imputation
-        
+                
                 # Impute missing values
                 X_clean = pd.DataFrame(imputer.fit_transform(X), columns=X.columns)
                 y_clean = pd.Series(imputer.fit_transform(y).ravel(), name='Q3_sec')
-        
-                # Train model on all available historical data
+            
+                # Train model
                 model = LinearRegression()
                 model.fit(X_clean, y_clean)
-        
-                # Use **historical data** for prediction, not `latest_data`
-                st.write("🚀 Predicting Q3 times for the upcoming race using historical data...")
-                predict_gp(model, X_clean)  # Predict using all historical data
-        
+            
+                # Fetch latest race data for prediction (if available)
+                latest_data = fetch_f1_data(current_year, race_num)
+    
+                # Predict using all historical data
+                st.write("🚀 Predicting Q3 times for the upcoming race...")
+                predict_gp(model, X_clean, latest_data)
+            
                 # Evaluate Model Performance
                 y_pred = model.predict(X_clean)
                 mae = mean_absolute_error(y_clean, y_pred)
                 r2 = r2_score(y_clean, y_pred)
-        
+            
                 # Display metrics in a well-formatted way
                 st.markdown("## 📊 Model Performance Metrics")
                 st.success(f"✅ **Mean Absolute Error:** `{mae:.2f}` seconds")
                 st.success(f"✅ **R² Score:** `{r2:.2f}`")
             else:
                 st.error("❌ No valid training data available.")
-        
+        else:
+            st.error("❌ No stored historical F1 data found.")
 
 if __name__ == "__main__":
     main()
-
