@@ -200,24 +200,28 @@ def predict_gp(model, latest_data):
     # Assign positions
     results_df['Position'] = range(1, len(results_df) + 1)
 
-    # Display results in Streamlit
-    display_predictions_table(results_df)
-
     # Display Top Driver Image
     top_driver = results_df.iloc[0]['Driver']
     image_url = get_wikipedia_driver_image(top_driver)
 
 
-    if image_url:
-        st.markdown(
-            f"""
-            <div style="text-align: center;">
-                <img src="{image_url}" width="300" 
-                     style="border-radius: 15px; border: 5px solid white; box-shadow: 0px 4px 6px rgba(0,0,0,0.1);">
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
+    col1, col2 = st.columns([1, 2])  # Adjust column widths as needed
+
+    with col1:
+        if image_url:
+            st.markdown(
+                f"""
+                <div style="text-align: center;">
+                    <img src="{image_url}" width="300" 
+                         style="border-radius: 15px; border: 5px solid white; box-shadow: 0px 4px 6px rgba(0,0,0,0.1);">
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+
+    with col2:
+        display_predictions_table(results_df)
+
 
 def main():
     st.title("Formula 1 Predictor")
