@@ -253,7 +253,7 @@ def main():
         )
     
 
-    current_year = st.selectbox("Select the year you are predicting for:", options=[2021, 2022, 2023, 2024, 2025], index=4)
+    current_year = st.selectbox("Select the year you are predicting for:", options=[2023, 2024, 2025], index=2)
     schedule = fastf1.get_event_schedule(current_year)
     race_mapping = dict(zip(schedule['EventName'], schedule.index))  # Map race name to round number
     # Select race based on fetched schedule
