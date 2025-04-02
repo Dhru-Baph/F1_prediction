@@ -201,26 +201,31 @@ def predict_gp(model, latest_data):
     results_df['Position'] = range(1, len(results_df) + 1)
 
     # Display Top Driver Image
-    top_driver = results_df.iloc[0]['Driver']
-    image_url = get_wikipedia_driver_image(top_driver)
+    # Get the top 3 drivers and their images
+    top_drivers = results_df.iloc[:3]['Driver']
+    image_urls = [get_wikipedia_driver_image(driver) for driver in top_drivers]
+    
+    # Create three columns for the images
+    col1, col2, col3 = st.columns(3)
+    
+    # Display images in each column
+    for col, image_url, driver in zip([col1, col2, col3], image_urls, top_drivers):
+        with col:
+            if image_url:
+                st.markdown(
+                    f"""
+                    <div style="text-align: center;">
+                        <img src="{image_url}" width="200" 
+                             style="border-radius: 15px; border: 3px solid white; box-shadow: 0px 4px 6px rgba(0,0,0,0.1);">
+                        <p style="font-weight: bold;">{driver}</p>
+                    </div>
+                    """,
+                    unsafe_allow_html=True,
+                )
+    
+    # Display the prediction table below the images
+    display_predictions_table(results_df)
 
-
-    col1, col2 = st.columns([1, 2])  # Adjust column widths as needed
-
-    with col1:
-        if image_url:
-            st.markdown(
-                f"""
-                <div style="text-align: center;">
-                    <img src="{image_url}" width="300" 
-                         style="border-radius: 15px; border: 5px solid white; box-shadow: 0px 4px 6px rgba(0,0,0,0.1);">
-                </div>
-                """,
-                unsafe_allow_html=True,
-            )
-
-    with col2:
-        display_predictions_table(results_df)
 
 
 def main():
